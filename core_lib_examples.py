@@ -32,6 +32,8 @@ import re           # Regular expressions
 
 from pprint import pprint   # Pretty printing
 
+import tf_libs as tf
+
 __author__ = 'Tom Farley'
 __copyright__ = "Copyright 2015, TF Library Project"
 __credits__ = []
@@ -44,6 +46,123 @@ arr2 = np.linspace(16,36,21)
 ends = [11,23.42]
 strings = ['Tom', 'Farley', 'Ellie', 'Corney']
 string = 'Farley'
+
+def built_in_examples():
+
+    print('*** built_in_examples ***\n')
+
+    x=[["a","b","c"], ["d","e","f"], ["g","h","i","j"]]
+    print('x=[["a","b","c"], ["d","e","f"], ["g","h","i","j"]]')
+
+    print("\n[j for i in x for j in i]  - list comprehension example")
+    print([j for i in x for j in i])
+
+
+def std_libs_examples():
+
+    x=[["a","b","c"], ["d","e","f"], ["g","h","i","j"]]
+    print('x=[["a","b","c"], ["d","e","f"], ["g","h","i","j"]]')
+
+    ## Nested lists
+    import itertools
+    print("\nlist(itertools.chain(*x)) - removes nested lists")
+    print(list(itertools.chain(*x)))
+
+    ## Named Tuples
+    import collections
+    Person = collections.namedtuple('Person', 'name age gender')
+    print('\nType of Person:', type(Person))
+    bob = Person(name='Bob', age=30, gender='male')
+    print('Representation:', bob)
+    jane = Person(name='Jane', age=29, gender='female')
+    print('Field by name:', jane.name)
+    print('Fields by index:')
+    for p in [ bob, jane ]:
+        print('%s is a %d year old %s' % p)
+
+    ## Ordered dictionary
+    print('\nRegular dictionary:')
+    d = {}
+    d['a'] = 'A'
+    d['b'] = 'B'
+    d['c'] = 'C'
+    d['d'] = 'D'
+    d['e'] = 'E'
+
+    for k, v in d.items():
+        print(k, v)
+
+    print('\nOrderedDict:')
+    d = collections.OrderedDict()
+    d['a'] = 'A'
+    d['b'] = 'B'
+    d['c'] = 'C'
+    d['d'] = 'D'
+    d['e'] = 'E'
+
+    for k, v in d.items():
+        print(k, v)
+
+    ## Default dictionary - default value for unassigned keys - no KeyError
+    def default_factory():
+        return None  #'default value'
+
+    d = collections.defaultdict(default_factory, foo='bar')
+    print('\nd:', d)
+    print('foo =>', d['foo'])
+    print('bar =>', d['bar'])
+
+    ## Decimal
+    import decimal # Alows exact decimal numbers - not floating point, so can have exact 0.1, 0.2, 6.1 etx
+    fmt = '{0:<20} {1:<20}'
+    print(fmt.format('\nInput', 'Output'))
+    print(fmt.format('-' * 20, '-' * 20))
+    # Integer
+    print(fmt.format(5, decimal.Decimal(5)))
+    # String
+    print(fmt.format('3.14', decimal.Decimal('3.14')))
+    # Float
+    print(fmt.format(repr(0.1), decimal.Decimal(str(0.1))))
+
+    ## sys - command line arguments
+    # import sys
+    # arg = sys.argv[1]
+    ## to be used like:
+    ## $ python script.py arg_string
+
+    ## CSV
+    ##Reading
+    import csv
+    f = open('test.txt', 'rt')
+    try:
+        reader = csv.reader(f, delimiter=',')
+        for row in reader:
+            print(row, end=' ')
+    finally:
+        f.close()
+    ## Writing
+    f = open('test.csv', 'wt')
+    try:
+        writer = csv.writer(f)
+        writer.writerow( ('Title 1', 'Title 2') )
+        for i in range(10):
+            writer.writerow( (i+1, chr(ord('a') + i), '08/%02d/15' % (i+1)) )
+    finally:
+        f.close()
+
+    # print(open('test.csv', 'rt').read())
+
+    ## Time - sleep
+    import time
+
+    for i in range(11):
+        phase = 'Phase %d' % i
+        print(phase)
+        time.sleep(0.2)
+    print('Done with loop')
+
+    time.sleep(1)
+
 
 def np_examples():
     """ Examples of useful numpy functions """
@@ -78,17 +197,18 @@ def np_examples():
     print("\nnp.fix(arr) - round towards zero")
     print(np.fix(arr))
 
-    # numpy.digitize - binning data
-#
-#     np.clip - move points outside range to boundaries:
-# >>> a = np.arange(10)
-# >>> np.clip(a, 1, 8)
-# array([1, 1, 2, 3, 4, 5, 6, 7, 8, 8])
-#
-# ndarray.flat - removes nested lists in numpy array
-#
-# np.lib.pad - pad ends of array with constants, max/min or reflections etc
+    bins = [0,3,7,22,24,100,101]
+    print("\nnp.digitize(arr, bins) - returns index of bin to which each data element belongs (index is for upper bound of bin - bins[i-1] <= x < bins[i])")
+    print(np.digitize(arr, bins))# - binning data
 
+    print("\nnp.clip(arr, 1.256, 8.2) - move points outside range to boundaries:")
+    print(np.clip(arr, 1.256, 8.2))
+
+    print("np.pad(arr, [6,10], mode='reflect') - pad ends of array with constants, max/min or reflections etc")
+    print(np.pad(arr, [6,10], mode='reflect'))
+
+    print("\nnp.flat(arr)- Return a copy of the array collapsed into one dimension.")
+    print(arr.flatten()) #- removes nested lists in numpy array
 
     print("np.column_stack((arr,arr*2)) - turn 1D arrays into columns - ideal for file writing with numpy.savetxt")
     print(np.column_stack((arr,arr*2)))
@@ -100,28 +220,50 @@ def np_examples():
     print("col1, col2 = np.loadtxt('test.txt', usecols=(0,1), unpack=True) - load text file produced with numpy.savetxt")
     print(np.loadtxt('test.txt', usecols=(0,1), unpack=True))
 
+    ## Useful ndarray methods:
+    # ndarray.take(indices[, axis, out, mode])	Return an array formed from the elements of a at the given indices.
+    # ndarray.put(indices, values[, mode])	Set a.flat[n] = values[n] for all n in indices.
+    # ndarray.sort([axis, kind, order])	Sort an array, in-place.
+    # ndarray.argsort([axis, kind, order])	Returns the indices that would sort this array.
+    # ndarray.nonzero()	Return the indices of the elements that are non-zero.
+    # ndarray.argmax([axis, out])	Return indices of the maximum values along the given axis.
+    # ndarray.min([axis, out])	Return the minimum along a given axis.
+    # ndarray.ptp([axis, out])	Peak to peak (maximum - minimum) value along a given axis.
+    # ndarray.clip(a_min, a_max[, out])	Return an array whose values are limited to [a_min, a_max].
+    # ndarray.round([decimals, out])	Return a with each element rounded to the given number of decimals.
+    # ndarray.sum([axis, dtype, out])	Return the sum of the array elements over the given axis.
+    # ndarray.cumsum([axis, dtype, out])	Return the cumulative sum of the elements along the given axis.
+    # ndarray.mean([axis, dtype, out])	Returns the average of the array elements along given axis.
+    # ndarray.var([axis, dtype, out, ddof])	Returns the variance of the array elements, along given axis.
+    # ndarray.std([axis, dtype, out, ddof])	Returns the standard deviation of the array elements along given axis.
+    # ndarray.all([axis, out])	Returns True if all elements evaluate to True.
+    # ndarray.any([axis, out])	Returns True if any of the elements of a evaluate to True.
 
-# ndarray.take(indices[, axis, out, mode])	Return an array formed from the elements of a at the given indices.
-# ndarray.put(indices, values[, mode])	Set a.flat[n] = values[n] for all n in indices.
-# ndarray.sort([axis, kind, order])	Sort an array, in-place.
-# ndarray.argsort([axis, kind, order])	Returns the indices that would sort this array.
-# ndarray.nonzero()	Return the indices of the elements that are non-zero.
-# ndarray.argmax([axis, out])	Return indices of the maximum values along the given axis.
-# ndarray.min([axis, out])	Return the minimum along a given axis.
-# ndarray.ptp([axis, out])	Peak to peak (maximum - minimum) value along a given axis.
-# ndarray.clip(a_min, a_max[, out])	Return an array whose values are limited to [a_min, a_max].
-# ndarray.round([decimals, out])	Return a with each element rounded to the given number of decimals.
-# ndarray.sum([axis, dtype, out])	Return the sum of the array elements over the given axis.
-# ndarray.cumsum([axis, dtype, out])	Return the cumulative sum of the elements along the given axis.
-# ndarray.mean([axis, dtype, out])	Returns the average of the array elements along given axis.
-# ndarray.var([axis, dtype, out, ddof])	Returns the variance of the array elements, along given axis.
-# ndarray.std([axis, dtype, out, ddof])	Returns the standard deviation of the array elements along given axis.
-# ndarray.all([axis, out])	Returns True if all elements evaluate to True.
-# ndarray.any([axis, out])	Returns True if any of the elements of a evaluate to True.
+def sp_examples():
 
+    rnd_arr = np.random.rand(20)
+    print("np.random.rand(20)")
+    print(rnd_arr)
 
+    # sp.signal.find_peaks_cwt - peak finding, returns peak indices, 2nd arguement is array of values
+    # covering expected peak width range
+    print("sp.signal.find_peaks_cwt(rnd_arr, np.linspace(0.2,0.4, 10))")
+    peakind = sp.signal.find_peaks_cwt(rnd_arr, np.linspace(0.2,0.4, 10))
+    print(peakind)
 
+    fig = plt.figure()
+    plt.plot(np.arange(20), rnd_arr, 'b--o', color = 'blue' )
+    plt.plot(peakind, rnd_arr[peakind], 'o', color="red" )
+    plt.title='sp.signal.find_peaks_cwt'
+    plt.show()
+
+def matplot_examples():
+    pass
 
 if __name__ == "__main__":
-    np_examples()
+    # built_in_examples()
+    std_libs_examples()
+    # np_examples()
+    # sp_examples()
+    # matplot_examples()
     pass
