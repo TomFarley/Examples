@@ -57,6 +57,11 @@ def built_in_examples():
     print("\n[j for i in x for j in i]  - list comprehension example")
     print([j for i in x for j in i])
 
+    print("with open(\"test.txt\") as f:  -  Deals with automatically closing file after use")
+    with open("test.txt") as f:
+        data = f.read()
+        print(data)
+
 
 def std_libs_examples():
 
@@ -79,6 +84,7 @@ def std_libs_examples():
     print('Fields by index:')
     for p in [ bob, jane ]:
         print('%s is a %d year old %s' % p)
+    ## Note: Cannot change values eg: jane.name = 'Janey'
 
     ## Ordered dictionary
     print('\nRegular dictionary:')
@@ -220,6 +226,14 @@ def np_examples():
     print("col1, col2 = np.loadtxt('test.txt', usecols=(0,1), unpack=True) - load text file produced with numpy.savetxt")
     print(np.loadtxt('test.txt', usecols=(0,1), unpack=True))
 
+    print("\nnp.isnan([1,np.nan,48646.418654])")
+    print(np.isnan([1,np.nan,48646.418654]))
+
+    print("\nnp.fromstring('1 2 3 4', dtype=int, sep=' ')")
+    print(np.fromstring('1 2 3 4', dtype=int, sep=' '))
+
+
+
     ## Useful ndarray methods:
     # ndarray.take(indices[, axis, out, mode])	Return an array formed from the elements of a at the given indices.
     # ndarray.put(indices, values[, mode])	Set a.flat[n] = values[n] for all n in indices.
@@ -257,13 +271,46 @@ def sp_examples():
     plt.title='sp.signal.find_peaks_cwt'
     plt.show()
 
-def matplot_examples():
-    pass
+def mpl_examples():
+    ## Using color maps - example from http://stackoverflow.com/questions/8931268/using-colormaps-to-set-color-of-line-in-matplotlib
+    # define some random data that emulates your intended code:
+    import matplotlib.pyplot as plt
+    import matplotlib
+    import numpy as np
+    NCURVES = 10
+    np.random.seed(101)
+    curves = [np.random.random(20) for i in range(NCURVES)]
+    values = range(NCURVES)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    jet = cm = plt.get_cmap('jet')
+    cNorm  = matplotlib.colors.Normalize(vmin=0, vmax=values[-1])
+    scalarMap = matplotlib.cm.ScalarMappable(norm=cNorm, cmap=jet)
+    print(scalarMap.get_clim())
+
+    lines = []
+    for idx in range(len(curves)):
+        line = curves[idx]
+        colorVal = scalarMap.to_rgba(values[idx])
+        colorText = (
+            'color: (%4.2f,%4.2f,%4.2f)'%(colorVal[0],colorVal[1],colorVal[2])
+            )
+        retLine, = ax.plot(line,
+                           color=colorVal,
+                           label=colorText)
+        lines.append(retLine)
+    ## Legend
+    handles,labels = ax.get_legend_handles_labels()
+    ax.legend(handles, labels, loc='upper right')
+    ax.grid()
+    plt.show()
 
 if __name__ == "__main__":
-    # built_in_examples()
-    std_libs_examples()
+    built_in_examples()
+    # std_libs_examples()
     # np_examples()
     # sp_examples()
-    # matplot_examples()
+    # mpl_examples()
     pass
